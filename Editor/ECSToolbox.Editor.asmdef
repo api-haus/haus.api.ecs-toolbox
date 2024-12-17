@@ -1,0 +1,4 @@
+{
+  "name": "ECSToolbox.Editor",
+  "includePlatforms": ["Editor"]
+}

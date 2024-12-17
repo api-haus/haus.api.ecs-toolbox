@@ -1,0 +1,12 @@
+{
+  "name": "haus.api.ecs-toolbox",
+  "displayName": "ECS Toolbox",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "Collection of various utilities making ECS->GameObject workflow easier.",
+  "keywords": [
+    "ecs"
+  ],
+  "dependencies": {
+  }
+}

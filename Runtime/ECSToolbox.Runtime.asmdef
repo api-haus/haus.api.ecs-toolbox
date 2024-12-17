@@ -1,0 +1,11 @@
+{
+    "name": "ECSToolbox.Runtime",
+    "references": [
+        "Unity.Burst",
+        "Unity.Physics",
+        "Unity.Entities",
+        "Unity.Transforms",
+        "Unity.Mathematics",
+        "Unity.Collections"
+    ]
+}
