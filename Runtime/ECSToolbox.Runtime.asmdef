@@ -1,11 +1,15 @@
 {
     "name": "ECSToolbox.Runtime",
+    "rootNamespace": "ECSToolbox",
     "references": [
         "Unity.Burst",
         "Unity.Physics",
         "Unity.Entities",
         "Unity.Transforms",
         "Unity.Mathematics",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.Entities.Hybrid",
+        "Unity.Physics.Custom"
     ]
 }

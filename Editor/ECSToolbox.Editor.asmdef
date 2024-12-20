@@ -1,4 +1,18 @@
 {
-  "name": "ECSToolbox.Editor",
-  "includePlatforms": ["Editor"]
+    "name": "ECSToolbox.Editor",
+    "rootNamespace": "ECSToolbox",
+    "references": [
+        "ECSToolbox.Runtime",
+        "Unity.Burst",
+        "Unity.Physics",
+        "Unity.Entities",
+        "Unity.Transforms",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Physics.Custom",
+        "Unity.Entities.Hybrid"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
 }

@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-namespace _0.Scripts
+namespace ECSToolbox.Editor
 {
 	using UnityEditor;
 	using UnityEditor.Build;
