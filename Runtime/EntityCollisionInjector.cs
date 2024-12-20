@@ -226,6 +226,9 @@ namespace ECSToolbox.Runtime
 			var colliderHeights = new NativeArray<float>(terrainData.heightmapResolution * terrainData.heightmapResolution,
 				Allocator.TempJob);
 
+			var colliderHoles = new NativeArray<bool>(terrainData.holesResolution * terrainData.holesResolution,
+				Allocator.TempJob);
+
 			float[,] terrainHeights = terrainData.GetHeights(0, 0, terrainData.heightmapResolution,
 				terrainData.heightmapResolution);
 
@@ -234,22 +237,19 @@ namespace ECSToolbox.Runtime
 			for (int j = 0; j < size.y; j++)
 			for (int i = 0; i < size.x; i++)
 			{
-				float h = terrainHeights[i, j];
-				if (i < size.x - 1 && j < size.y - 1)
-				{
-					bool hole = terrainHoles[i, j];
-					if (!hole)
-					{
-						h = -.01f;
-					}
-				}
-
-				colliderHeights[j + (i * size.x)] = h;
+				colliderHeights[j + (i * size.x)] = terrainHeights[i, j];
 			}
 
-			var c = Unity.Physics.TerrainCollider.Create(colliderHeights, size, scale,
+			for (int j = 0; j < size.y - 1; j++)
+			for (int i = 0; i < size.x - 1; i++)
+			{
+				colliderHoles[j + (i * (size.x - 1))] = terrainHoles[i, j];
+			}
+
+			var c = Unity.Physics.TerrainCollider.Create(colliderHeights, colliderHoles, size, scale,
 				Unity.Physics.TerrainCollider.CollisionMethod.Triangles, filter);
 			colliderHeights.Dispose();
+			colliderHoles.Dispose();
 			return c;
 		}
 
