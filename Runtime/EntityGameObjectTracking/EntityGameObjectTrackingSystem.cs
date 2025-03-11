@@ -1,19 +1,17 @@
-namespace ECSToolbox.Runtime.EntityGameObjectTracking
+namespace ECSToolbox.EntityGameObjectTracking
 {
 	using Unity.Entities;
 	using Unity.Transforms;
 
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	[RequireMatchingQueriesForUpdate]
-	partial class EntityGameObjectTrackingSystem : SystemBase
+	internal partial class EntityGameObjectTrackingSystem : SystemBase
 	{
 		protected override void OnUpdate()
 		{
-			foreach (var (entityHostsGameObjectInstance, ltw) in SystemAPI
-				         .Query<EntityHostsGameObjectInstance, LocalToWorld>())
-			{
-				entityHostsGameObjectInstance.Instance.SetPositionAndRotation(ltw.Position, ltw.Rotation);
-			}
+			foreach (var (entityHostsGameObjectInstance, ltw) in SystemAPI.
+				         Query<EntityHostsGameObjectInstance, LocalToWorld>())
+				entityHostsGameObjectInstance.instance.SetPositionAndRotation(ltw.Position, ltw.Rotation);
 		}
 	}
 }

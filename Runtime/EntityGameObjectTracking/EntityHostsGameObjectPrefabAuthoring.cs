@@ -1,4 +1,4 @@
-namespace ECSToolbox.Runtime.EntityGameObjectTracking
+namespace ECSToolbox.EntityGameObjectTracking
 {
 	using Unity.Entities;
 	using UnityEngine;

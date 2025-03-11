@@ -1,18 +1,21 @@
 {
-    "name": "ECSToolbox.Editor",
-    "rootNamespace": "ECSToolbox",
-    "references": [
-        "ECSToolbox.Runtime",
-        "Unity.Burst",
-        "Unity.Physics",
-        "Unity.Entities",
-        "Unity.Transforms",
-        "Unity.Mathematics",
-        "Unity.Collections",
-        "Unity.Physics.Custom",
-        "Unity.Entities.Hybrid"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ]
+	"name": "ECSToolbox.Editor",
+	"rootNamespace": "ECSToolbox",
+	"references": [
+		"ECSToolbox.Runtime",
+		"Unity.Burst",
+		"Unity.Scenes",
+		"Unity.Scenes.Editor",
+		"Unity.Physics",
+		"Unity.RenderPipelines.Core.Runtime",
+		"Unity.Entities",
+		"Unity.Transforms",
+		"Unity.Mathematics",
+		"Unity.Collections",
+		"Unity.Physics.Custom",
+		"Unity.Entities.Hybrid"
+	],
+	"includePlatforms": [
+		"Editor"
+	]
 }
