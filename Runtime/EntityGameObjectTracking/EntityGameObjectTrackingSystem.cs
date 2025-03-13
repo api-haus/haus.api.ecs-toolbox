@@ -9,9 +9,16 @@ namespace ECSToolbox.EntityGameObjectTracking
 	{
 		protected override void OnUpdate()
 		{
-			foreach (var (entityHostsGameObjectInstance, ltw) in SystemAPI.
-				         Query<EntityHostsGameObjectInstance, LocalToWorld>())
-				entityHostsGameObjectInstance.instance.SetPositionAndRotation(ltw.Position, ltw.Rotation);
+			foreach (
+				var (entityHostsGameObjectInstance, ltw) in SystemAPI.Query<
+					EntityHostsGameObjectInstance,
+					LocalToWorld
+				>()
+			)
+				entityHostsGameObjectInstance.instance.SetPositionAndRotation(
+					ltw.Position,
+					ltw.Rotation
+				);
 		}
 	}
 }

@@ -12,7 +12,10 @@ namespace ECSToolbox
 		/// <param name="localToWorldMatrix">World transform of the collider authoring component.</param>
 		/// <param name="bodyLocalToWorldMatrix">World transform of the body the resultant baked collider will be added to.</param>
 		/// <returns>Bake matrix, applied to the collider geometry during baking.</returns>
-		protected static Matrix4x4 GetColliderBakeMatrix(Matrix4x4 localToWorldMatrix, Matrix4x4 bodyLocalToWorldMatrix)
+		protected static Matrix4x4 GetColliderBakeMatrix(
+			Matrix4x4 localToWorldMatrix,
+			Matrix4x4 bodyLocalToWorldMatrix
+		)
 		{
 			float4x4 localToWorld = (float4x4)localToWorldMatrix;
 			float4x4 bodyLocalToWorld = (float4x4)bodyLocalToWorldMatrix;
@@ -47,7 +50,10 @@ namespace ECSToolbox
 			if (bakeUniformScale || localToWorld.HasShear() || localToWorld.HasNonUniformScale())
 			{
 				RigidTransform rigidBodyTransform = Math.DecomposeRigidBodyTransform(localToWorld);
-				float4x4 bakeMatrix = math.mul(math.inverse(new float4x4(rigidBodyTransform)), localToWorld);
+				float4x4 bakeMatrix = math.mul(
+					math.inverse(new float4x4(rigidBodyTransform)),
+					localToWorld
+				);
 				// make sure we have a valid transformation matrix
 				bakeMatrix.c0[3] = 0;
 				bakeMatrix.c1[3] = 0;
@@ -60,20 +66,27 @@ namespace ECSToolbox
 			return float4x4.identity;
 		}
 
-		public static CapsuleGeometry CapsuleGeometry(UnityEngine.CapsuleCollider shape, Transform bodyTransform)
+		public static CapsuleGeometry CapsuleGeometry(
+			UnityEngine.CapsuleCollider shape,
+			Transform bodyTransform
+		)
 		{
-			Matrix4x4 bakeToShape =
-				GetColliderBakeMatrix(shape.transform.localToWorldMatrix, bodyTransform.localToWorldMatrix);
+			Matrix4x4 bakeToShape = GetColliderBakeMatrix(
+				shape.transform.localToWorldMatrix,
+				bodyTransform.localToWorldMatrix
+			);
 			float3 lossyScale = math.abs(bakeToShape.lossyScale);
 
 			// the capsule axis corresponds to the local axis specified by the direction index.
 			float3 capsuleAxis = new() { [shape.direction] = 1f };
 
 			// the baked radius is the user-specified shape radius times the maximum of the scale of the two axes orthogonal to the capsule axis.
-			float radius = shape.radius * math.cmax(new float3(lossyScale) { [shape.direction] = 0f });
+			float radius =
+				shape.radius * math.cmax(new float3(lossyScale) { [shape.direction] = 0f });
 
 			// the capsule vertex offset points from the center of the capsule to the top of the capsule's cylindrical center part.
-			float3 vertexOffset = capsuleAxis * ((0.5f * shape.height * lossyScale[shape.direction]) - radius);
+			float3 vertexOffset =
+				capsuleAxis * ((0.5f * shape.height * lossyScale[shape.direction]) - radius);
 
 			// finish baking the vertex offset by rotating it with the bake matrix
 			vertexOffset = math.rotate(bakeToShape.rotation, vertexOffset);
@@ -85,7 +98,12 @@ namespace ECSToolbox
 			float3 v0 = center + vertexOffset;
 			float3 v1 = center - vertexOffset;
 
-			return new CapsuleGeometry { Vertex0 = v0, Vertex1 = v1, Radius = radius };
+			return new CapsuleGeometry
+			{
+				Vertex0 = v0,
+				Vertex1 = v1,
+				Radius = radius,
+			};
 		}
 	}
 }

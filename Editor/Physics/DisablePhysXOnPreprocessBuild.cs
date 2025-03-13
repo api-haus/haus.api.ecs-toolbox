@@ -22,13 +22,17 @@ namespace ECSToolbox.Editor.Physics
 		public void OnPreprocessBuild(BuildReport report) => SetBackEnd(PhysicsBackend.NONE);
 
 		[PostProcessBuild(1000)]
-		public static void PostprocessBuild(BuildTarget target, string pathToBuiltProject)
-			=> SetBackEnd(PhysicsBackend.PHYS_X);
+		public static void PostprocessBuild(BuildTarget target, string pathToBuiltProject) =>
+			SetBackEnd(PhysicsBackend.PHYS_X);
 
 		public static void SetBackEnd(PhysicsBackend be)
 		{
-			SerializedObject dynamicsManager = new(AssetDatabase.LoadAllAssetsAtPath(DYNAMICS_MANAGER_ASSET_PATH)[0]);
-			SerializedProperty currentBackendId = dynamicsManager.FindProperty("m_CurrentBackendId");
+			SerializedObject dynamicsManager = new(
+				AssetDatabase.LoadAllAssetsAtPath(DYNAMICS_MANAGER_ASSET_PATH)[0]
+			);
+			SerializedProperty currentBackendId = dynamicsManager.FindProperty(
+				"m_CurrentBackendId"
+			);
 
 			currentBackendId.uintValue = (uint)be;
 			dynamicsManager.ApplyModifiedProperties();
