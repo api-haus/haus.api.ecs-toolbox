@@ -45,27 +45,34 @@
 			Publish<Collider>(scene);
 		}
 
-		static SubScene FindProxySubScene<T>(Scene activeScene) where T : Component
+		static SubScene FindProxySubScene<T>(Scene activeScene)
+			where T : Component
 		{
 			GameObject[] roots = activeScene.GetRootGameObjects();
 
 			string subSceneName = $"{activeScene.name}{typeof(T).Name}_Proxy";
 
-			SubScene subScene = roots.SelectMany(r => r.GetComponentsInChildren<SubScene>()).
-				FirstOrDefault(s => s.SceneName == subSceneName);
+			SubScene subScene = roots
+				.SelectMany(r => r.GetComponentsInChildren<SubScene>())
+				.FirstOrDefault(s => s.SceneName == subSceneName);
 
 			if (null == subScene)
 			{
 				GameObject subSceneGo = new(subSceneName);
 				subScene = subSceneGo.AddComponent<SubScene>();
 
-				string dstSceneDir = Path.Join(Path.GetDirectoryName(activeScene.path),
-					Path.GetFileNameWithoutExtension(activeScene.path));
+				string dstSceneDir = Path.Join(
+					Path.GetDirectoryName(activeScene.path),
+					Path.GetFileNameWithoutExtension(activeScene.path)
+				);
 				string dstScenePath = Path.Join(dstSceneDir, subSceneName + ".unity");
 				if (!Directory.Exists(dstSceneDir))
 					Directory.CreateDirectory(dstSceneDir);
 
-				Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+				Scene scene = EditorSceneManager.NewScene(
+					NewSceneSetup.EmptyScene,
+					NewSceneMode.Additive
+				);
 				scene.name = subSceneName;
 
 				SubSceneInspectorUtility.SetSceneAsSubScene(scene);
@@ -79,9 +86,19 @@
 			return subScene;
 		}
 
-		static void Publish<T>(Scene activeScene) where T : Component
+		static void Publish<T>(Scene activeScene)
+			where T : Component
 		{
 			GameObject[] roots = activeScene.GetRootGameObjects();
+
+			ProxyComponentProvider<T>[] proxyProviders = roots
+				.SelectMany(rootObject =>
+					rootObject.GetComponentsInChildren<ProxyComponentProvider<T>>()
+				)
+				.ToArray();
+
+			if (proxyProviders.Length == 0)
+				return;
 
 			SubScene sub = FindProxySubScene<T>(activeScene);
 			SubSceneUtility.EditScene(sub);
@@ -90,20 +107,15 @@
 
 			DestroyRootGameObjectsInScene(sub.EditingScene);
 
-			foreach (GameObject rootObject in roots)
+			foreach (ProxyComponentProvider<T> provider in proxyProviders)
 			{
-				ProxyComponentProvider<T>[] proxyProvider =
-					rootObject.GetComponentsInChildren<ProxyComponentProvider<T>>();
+				T[] components = provider
+					.GatherComponents()
+					.OrderBy(c => c.GetComponentIndex())
+					.ToArray();
 
-				foreach (ProxyComponentProvider<T> provider in proxyProvider)
-				{
-					T[] components = provider.GatherComponents().
-						OrderBy(c => c.GetComponentIndex()).
-						ToArray();
-
-					foreach (T component in components)
-						PublishProxyComponent(sub, component, collection, provider.IsStatic());
-				}
+				foreach (T component in components)
+					PublishProxyComponent(sub, component, collection, provider.IsStatic());
 			}
 
 			EditorSceneManager.SaveScene(sub.EditingScene);
@@ -116,38 +128,66 @@
 				CoreUtils.Destroy(rootGameObject);
 		}
 
-		static void PublishProxyComponent<T>(SubScene subScene, T originalComponent,
-			SceneComponentCollection<T> sceneComponentCollection, bool createStaticGameObject) where T : Component
+		static void PublishProxyComponent<T>(
+			SubScene subScene,
+			T originalComponent,
+			SceneComponentCollection<T> sceneComponentCollection,
+			bool createStaticGameObject
+		)
+			where T : Component
 		{
-			T proxyComponent = sceneComponentCollection.CreateHostGameObjectAndAddProxyComponent(originalComponent,
-				subScene.EditingScene, createStaticGameObject);
+			T proxyComponent = sceneComponentCollection.CreateHostGameObjectAndAddProxyComponent(
+				originalComponent,
+				subScene.EditingScene,
+				createStaticGameObject
+			);
 
 			ComponentProxyUtility.CopyComponentValues(originalComponent, proxyComponent);
 		}
 
-		class SceneComponentCollection<T> where T : Component
+		class SceneComponentCollection<T>
+			where T : Component
 		{
 			readonly Dictionary<int, GameObject> m_ProxyHosts = new();
 
-			public T CreateHostGameObjectAndAddProxyComponent(T original, Scene proxyScene,
-				bool createStaticGameObject = false)
+			public T CreateHostGameObjectAndAddProxyComponent(
+				T original,
+				Scene proxyScene,
+				bool createStaticGameObject = false
+			)
 			{
-				GameObject proxyHost = GetOrCreateProxyHost(original, proxyScene, createStaticGameObject);
+				GameObject proxyHost = GetOrCreateProxyHost(
+					original,
+					proxyScene,
+					createStaticGameObject
+				);
 
 				T clone = proxyHost.AddComponent(original.GetType()) as T;
 
 				return clone;
 			}
 
-			GameObject GetOrCreateProxyHost(T original, Scene proxyScene, bool createStaticGameObject = false)
+			GameObject GetOrCreateProxyHost(
+				T original,
+				Scene proxyScene,
+				bool createStaticGameObject = false
+			)
 			{
 				if (!m_ProxyHosts.TryGetValue(Hash(original.gameObject), out GameObject proxyHost))
-					proxyHost = CreateProxyHost(original.gameObject, proxyScene, createStaticGameObject);
+					proxyHost = CreateProxyHost(
+						original.gameObject,
+						proxyScene,
+						createStaticGameObject
+					);
 
 				return proxyHost;
 			}
 
-			GameObject CreateProxyHost(GameObject original, Scene proxyScene, bool createStaticGameObject)
+			GameObject CreateProxyHost(
+				GameObject original,
+				Scene proxyScene,
+				bool createStaticGameObject
+			)
 			{
 				if (!m_ProxyHosts.TryGetValue(Hash(original), out GameObject proxyHost))
 				{
@@ -161,25 +201,32 @@
 				return proxyHost;
 			}
 
-			void ReconstructHierarchy(GameObject original, GameObject proxy, Scene proxyScene,
-				bool createStaticGameObject)
+			void ReconstructHierarchy(
+				GameObject original,
+				GameObject proxy,
+				Scene proxyScene,
+				bool createStaticGameObject
+			)
 			{
 				Transform originalCursor = original.transform;
 				Transform proxyCursor = proxy.transform;
 
 				if (originalCursor.parent && !proxyCursor.parent)
-					proxyCursor.parent = CreateProxyHost(originalCursor.parent.gameObject, proxyScene,
-							createStaticGameObject).
-						transform;
+					proxyCursor.parent = CreateProxyHost(
+						originalCursor.parent.gameObject,
+						proxyScene,
+						createStaticGameObject
+					).transform;
 
 				ComponentProxyUtility.CopyComponentValues(original.transform, proxy.transform);
 			}
 
-			int Hash(GameObject originalComponent) => ComponentProxyUtility.HierarchyHash(originalComponent);
+			int Hash(GameObject originalComponent) =>
+				ComponentProxyUtility.HierarchyHash(originalComponent);
 		}
 
-		public static void EnsureSubSceneExists<T>(ProxyComponentProvider<T> target) where T : Component
-			=> FindProxySubScene<T>(target.gameObject.scene);
+		public static void EnsureSubSceneExists<T>(ProxyComponentProvider<T> target)
+			where T : Component => FindProxySubScene<T>(target.gameObject.scene);
 	}
 
 	internal static class ComponentProxyUtility
@@ -189,7 +236,10 @@
 			int instanceHash = gameObject.GetInstanceID();
 
 			if (gameObject.transform.parent)
-				return HashCode.Combine(HierarchyHash(gameObject.transform.parent.gameObject), instanceHash);
+				return HashCode.Combine(
+					HierarchyHash(gameObject.transform.parent.gameObject),
+					instanceHash
+				);
 
 			return instanceHash;
 		}
